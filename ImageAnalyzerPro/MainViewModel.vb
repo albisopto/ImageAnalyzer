@@ -65,7 +65,9 @@ Public Class MainViewModel
 
             'Convert to ChipImages (unsorted)  To do: Sort files
             For Each f In files
-                Dim chipImage As New ChipImage(f.Name, f.FullName)
+                'Extract chipnumber
+                Dim chipNumber As String = f.Name.Split(".")(0)
+                Dim chipImage As New ChipImage(chipNumber, f.FullName)
                 ChipImages.Add(chipImage)
             Next
         End If
