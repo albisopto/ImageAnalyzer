@@ -7,13 +7,20 @@ Imports Prism.Commands
 Public Class MainViewModel
     Implements INotifyPropertyChanged
 
+    Private index As Integer
+
     Public Sub New()
 
         OpenCommand = New DelegateCommand(AddressOf HandleOpenCommand)
+        BackCommand = New DelegateCommand(AddressOf HandleBackCommand, AddressOf canExecuteBackCommand)
+        ForwardCommand = New DelegateCommand(AddressOf HandleForwardCommand, AddressOf canExecuteForwardCommand)
         ChipImages = New ObservableCollection(Of ChipImage)
 
         _currentChipNumber = "No folder selected"
     End Sub
+
+
+#Region "Viewmodel Properties"
 
     Private _currentChipImage As ChipImage
     Public Property CurrentChipImage As ChipImage
@@ -37,6 +44,7 @@ Public Class MainViewModel
         End Get
     End Property
 
+
     Private Property ChipImages As ObservableCollection(Of ChipImage)
 
     Public Property OpenCommand As DelegateCommand
@@ -44,6 +52,10 @@ Public Class MainViewModel
     Public Property ForwardCommand As DelegateCommand
     Public Property SetFailureCommand As DelegateCommand
     Public Property SaveListCommand As DelegateCommand
+
+#End Region
+
+#Region "Command Handlers"
 
     Private Sub HandleOpenCommand()
 
@@ -74,12 +86,53 @@ Public Class MainViewModel
 
         'Display first chip (unsorted)
         If ChipImages.Count > 0 Then
-            CurrentChipImage = ChipImages(0)
+            index = 0
+            CurrentChipImage = ChipImages(index)
+            ForwardCommand.RaiseCanExecuteChanged()
+            BackCommand.RaiseCanExecuteChanged()
             NotifyPropertyChanged("CurrentChipImage")
             NotifyPropertyChanged("CurrentChipNumber")
         End If
 
     End Sub
+
+    Private Function canExecuteBackCommand() As Boolean
+        If ChipImages.Count = 0 Or index < 1 Then
+            Return False
+        End If
+        Return True
+    End Function
+
+    Private Sub HandleBackCommand()
+        If ChipImages.Count > 0 And index > 0 Then
+            index = index - 1
+            CurrentChipImage = ChipImages(index)
+            ForwardCommand.RaiseCanExecuteChanged()
+            BackCommand.RaiseCanExecuteChanged()
+            NotifyPropertyChanged("CurrentChipImage")
+            NotifyPropertyChanged("CurrentChipNumber")
+        End If
+    End Sub
+
+    Private Function canExecuteForwardCommand() As Boolean
+        If ChipImages.Count = 0 Or index >= ChipImages.Count - 1 Then
+            Return False
+        End If
+        Return True
+    End Function
+
+    Private Sub HandleForwardCommand()
+        If ChipImages.Count > 0 And index < ChipImages.Count - 1 Then
+            index = index + 1
+            CurrentChipImage = ChipImages(index)
+            ForwardCommand.RaiseCanExecuteChanged()
+            BackCommand.RaiseCanExecuteChanged()
+            NotifyPropertyChanged("CurrentChipImage")
+            NotifyPropertyChanged("CurrentChipNumber")
+        End If
+    End Sub
+
+#End Region
 
 #Region "INotifyPropertyChanged Members"
 

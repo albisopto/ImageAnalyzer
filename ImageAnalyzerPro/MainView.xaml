@@ -46,6 +46,7 @@
             
             <StackPanel Grid.Column="1" Orientation="Horizontal"  HorizontalAlignment="Center"  >
                 <Button Style="{StaticResource MaterialDesignFloatingActionButton}" Margin="0,0,50,0"
+                    Command="{Binding BackCommand}"
 	                ToolTip="Voriges Bild">
                 <materialDesign:PackIcon
 		                    Width="32"
@@ -60,6 +61,7 @@
 		                    Kind="Close" />
             </Button>
             <Button Style="{StaticResource MaterialDesignFloatingActionButton}" Margin="50,0,50,0"
+                    Command="{Binding ForwardCommand}"
 	                ToolTip="Nächstes Bild">
                 <materialDesign:PackIcon
 		                    Width="32"
