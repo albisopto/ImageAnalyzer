@@ -1,4 +1,7 @@
-﻿Partial Class MainView
+﻿Imports System.ComponentModel.Composition
+
+<Export>
+Partial Class MainView
 
     Public Sub New()
 

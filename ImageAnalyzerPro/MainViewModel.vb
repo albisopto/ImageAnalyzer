@@ -1,6 +1,8 @@
 ﻿Imports System.Collections.ObjectModel
 Imports System.ComponentModel
+Imports System.ComponentModel.Composition
 Imports System.IO
+Imports Microsoft.Practices.ServiceLocation
 Imports Microsoft.Win32
 Imports Prism.Commands
 
@@ -8,9 +10,11 @@ Public Class MainViewModel
     Implements INotifyPropertyChanged
 
     Private index As Integer
+    Private imageLoader As IImageLoader
 
     Public Sub New()
 
+        imageLoader = ServiceLocator.Current.GetService(GetType(IImageLoader))
         OpenCommand = New DelegateCommand(AddressOf HandleOpenCommand)
         BackCommand = New DelegateCommand(AddressOf HandleBackCommand, AddressOf canExecuteBackCommand)
         ForwardCommand = New DelegateCommand(AddressOf HandleForwardCommand, AddressOf canExecuteForwardCommand)
@@ -18,7 +22,6 @@ Public Class MainViewModel
 
         _currentChipNumber = "No folder selected"
     End Sub
-
 
 #Region "Viewmodel Properties"
 
@@ -36,7 +39,7 @@ Public Class MainViewModel
     Private _currentChipNumber As String
     Public ReadOnly Property CurrentChipNumber As String
         Get
-            If ChipImages.Count = 0 Then
+            If imageLoader.ImageCount = 0 Then
                 Return "No image folder selected ....."
             Else
                 Return "Current chip: " + _currentChipImage.ChipNumber
@@ -59,35 +62,19 @@ Public Class MainViewModel
 
     Private Sub HandleOpenCommand()
 
-        Dim _initialFileInfo As FileInfo
-        Dim _directory As DirectoryInfo
-        Dim files As List(Of FileInfo) = New List(Of FileInfo)
-
         'Open file dialog
         Dim _openFileDialog As OpenFileDialog = New OpenFileDialog
         _openFileDialog.InitialDirectory = "C:\tmp"
         _openFileDialog.Filter = "Image Files (*.jpg)|*.jpg; *.png"
         If _openFileDialog.ShowDialog = True Then
-
-            'Get Files
-            Dim _initialFile As String = _openFileDialog.FileName
-            _initialFileInfo = New FileInfo(_initialFile)
-            _directory = _initialFileInfo.Directory
-            files = _directory.GetFiles.ToList
-
-            'Convert to ChipImages (unsorted)  To do: Sort files
-            For Each f In files
-                'Extract chipnumber
-                Dim chipNumber As String = f.Name.Split(".")(0)
-                Dim chipImage As New ChipImage(chipNumber, f.FullName)
-                ChipImages.Add(chipImage)
-            Next
+            Dim uri As Uri = New Uri(_openFileDialog.FileName)
+            imageLoader.LoadImages(uri)
         End If
 
         'Display first chip (unsorted)
-        If ChipImages.Count > 0 Then
+        If imageLoader.ImageCount > 0 Then
             index = 0
-            CurrentChipImage = ChipImages(index)
+            CurrentChipImage = imageLoader.GetImage(index)
             ForwardCommand.RaiseCanExecuteChanged()
             BackCommand.RaiseCanExecuteChanged()
             NotifyPropertyChanged("CurrentChipImage")
@@ -97,16 +84,16 @@ Public Class MainViewModel
     End Sub
 
     Private Function canExecuteBackCommand() As Boolean
-        If ChipImages.Count = 0 Or index < 1 Then
+        If imageLoader.ImageCount = 0 Or index < 1 Then
             Return False
         End If
         Return True
     End Function
 
     Private Sub HandleBackCommand()
-        If ChipImages.Count > 0 And index > 0 Then
+        If imageLoader.ImageCount > 0 And index > 0 Then
             index = index - 1
-            CurrentChipImage = ChipImages(index)
+            CurrentChipImage = imageLoader.GetImage(index)
             ForwardCommand.RaiseCanExecuteChanged()
             BackCommand.RaiseCanExecuteChanged()
             NotifyPropertyChanged("CurrentChipImage")
@@ -115,16 +102,16 @@ Public Class MainViewModel
     End Sub
 
     Private Function canExecuteForwardCommand() As Boolean
-        If ChipImages.Count = 0 Or index >= ChipImages.Count - 1 Then
+        If imageLoader.ImageCount = 0 Or index >= imageLoader.ImageCount - 1 Then
             Return False
         End If
         Return True
     End Function
 
     Private Sub HandleForwardCommand()
-        If ChipImages.Count > 0 And index < ChipImages.Count - 1 Then
+        If imageLoader.ImageCount > 0 And index < imageLoader.ImageCount - 1 Then
             index = index + 1
-            CurrentChipImage = ChipImages(index)
+            CurrentChipImage = imageLoader.GetImage(index)
             ForwardCommand.RaiseCanExecuteChanged()
             BackCommand.RaiseCanExecuteChanged()
             NotifyPropertyChanged("CurrentChipImage")

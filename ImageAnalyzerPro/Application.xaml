@@ -1,8 +1,7 @@
 ﻿<Application x:Class="Application"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="clr-namespace:ImageAnalyzerPro"
-    StartupUri="MainView.xaml">
+    xmlns:local="clr-namespace:ImageAnalyzerPro">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
